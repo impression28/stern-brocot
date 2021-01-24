@@ -42,13 +42,28 @@ mp_err sb_fwrite_frac(sb_frac *a, int radix, FILE *stream)
 
 int main()
 {
+	sb_frac p;
 	sb_frac q;
+	// #TODO verificar erros de inicialiação
+	sb_frac_init(&p);
 	sb_frac_init(&q);
 
-	mp_zero(&q.num);
-	mp_zero(&q.den);
+	const int32_t one = 1;
+	const int32_t zero = 0;
 
+	mp_set_i32(&p.num, zero);
+	mp_set_i32(&p.den, one);
+
+	mp_set_i32(&q.num, one);
+	mp_set_i32(&q.den, zero);
+
+	sb_fwrite_frac(&p, 10, stdout);
+	printf("\n");
 	sb_fwrite_frac(&q, 10, stdout);
+	printf("\n");
+
+	sb_mediant(&p, &q, &p);
+	sb_fwrite_frac(&p, 10, stdout);
 	printf("\n");
 
 	sb_frac_clear(&q);
