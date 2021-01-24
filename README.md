@@ -4,6 +4,7 @@ pure C implementation of a stern brocot tree
 # TODO
 - [x] definir estrutura de dados para frações
 - [x] calcular mediante de duas frações
+- [x] dar print em uma fração
 - [ ] definir estrutura de dados para árvore de stern-brocot
 - [ ] dar print na árvore com uma depth-first search
 - [ ] gerar uma árvore de stern-brocot com profundidade n

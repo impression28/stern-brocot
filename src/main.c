@@ -17,7 +17,7 @@ void sb_frac_clear(sb_frac *q)
 	mp_clear_multi(&q->den, &q->num, NULL);
 }
 
-// calcula a [mediante] de duas frações
+// calcula a [mediante] de duas frações.
 // é perfeitamente legal termos
 // a == b ou b == c ou a == c
 // [mediante](https://en.wikipedia.org/wiki/Mediant_(mathematics))
@@ -30,10 +30,27 @@ mp_err sb_mediant(sb_frac *a, sb_frac *b, sb_frac *c)
 	return ret;
 }
 
+// dá print na fração `a` em base `radix` em `stream`
+mp_err sb_fwrite_frac(sb_frac *a, int radix, FILE *stream)
+{
+	mp_err ret = mp_fwrite(&a->num, radix, stream);
+	if (ret != MP_OKAY) return ret;
+	fprintf(stream, "/");
+	ret = mp_fwrite(&a->den, radix, stream);
+	return ret;
+}
+
 int main()
 {
 	sb_frac q;
 	sb_frac_init(&q);
+
+	mp_zero(&q.num);
+	mp_zero(&q.den);
+
+	sb_fwrite_frac(&q, 10, stdout);
+	printf("\n");
+
 	sb_frac_clear(&q);
 	/*
 	mp_int *a = malloc(sizeof(*a));
