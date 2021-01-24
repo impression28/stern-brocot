@@ -40,6 +40,45 @@ mp_err sb_fwrite_frac(sb_frac *a, int radix, FILE *stream)
 	return ret;
 }
 
+struct sb_node
+{
+	sb_frac frac;
+	struct sb_node *l;
+	struct sb_node *r;
+};
+
+typedef struct sb_node sb_node;
+
+// #TODO fazer uma implementação não-recursiva disto
+// tenho medo de stack-overflows, apesar de que
+// acho muito difícil termos uma árvore tão profunda que
+// vá dar stack overflow
+void sb_tree_free(sb_node *node)
+{
+	if (node->l != NULL)
+	{
+		sb_tree_free(node->l);
+	}
+	if (node->r != NULL)
+	{
+		sb_tree_free(node->r);
+	}
+	sb_frac_clear(&node->frac);
+	free(node);
+}
+void sb_tree_clear(sb_node *node)
+{
+	if (node->l != NULL)
+	{
+		sb_tree_free(node->l);
+	}
+	if (node->r != NULL)
+	{
+		sb_tree_free(node->r);
+	}
+	sb_frac_clear(&node->frac);
+}
+
 int main()
 {
 	sb_frac p;
