@@ -17,6 +17,19 @@ void sb_frac_clear(sb_frac *q)
 	mp_clear_multi(&q->den, &q->num, NULL);
 }
 
+// calcula a [mediante] de duas frações
+// é perfeitamente legal termos
+// a == b ou b == c ou a == c
+// [mediante](https://en.wikipedia.org/wiki/Mediant_(mathematics))
+mp_err sb_mediant(sb_frac *a, sb_frac *b, sb_frac *c)
+{
+	mp_err ret;
+	ret = mp_add(&a->num, &b->num, &c->num);
+	if (ret != MP_OKAY) return ret;
+	ret = mp_add(&a->den, &b->den, &c->den);
+	return ret;
+}
+
 int main()
 {
 	sb_frac q;
