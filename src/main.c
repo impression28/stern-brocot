@@ -1,10 +1,26 @@
 #include <stdlib.h>
 #include <tommath.h>
 
+// uma fração é um par de inteiros
 typedef struct {
   mp_int num;
   mp_int den;
 } sb_frac;
+
+// uma fração diádica tem denominador igual a 2^den_exp
+typedef struct {
+  mp_int num;
+  int32_t den_exp;
+} sb_dfrac;
+
+// um nó de árvore binária de stern-brocot
+struct sb_node {
+  sb_frac frac;
+  struct sb_node *l;
+  struct sb_node *r;
+};
+
+typedef struct sb_node sb_node;
 
 mp_err sb_frac_init(sb_frac *q) {
   return mp_init_multi(&q->num, &q->den, NULL);
@@ -33,14 +49,6 @@ mp_err sb_fwrite_frac(sb_frac *a, int radix, FILE *stream) {
   ret = mp_fwrite(&a->den, radix, stream);
   return ret;
 }
-
-struct sb_node {
-  sb_frac frac;
-  struct sb_node *l;
-  struct sb_node *r;
-};
-
-typedef struct sb_node sb_node;
 
 // #TODO fazer uma implementação não-recursiva disto tenho medo de
 // stack-overflows, apesar de que acho muito difícil termos uma árvore tão
@@ -105,11 +113,13 @@ mp_err sb_fwrite_tree(sb_node *node, int radix, FILE *stream) {
 }
 
 int main(int argc, char *argv[]) {
-  // if (argc != 2) return 0;
-  const int depth = 4; // atoi(argv[1]);
+  if (argc != 2)
+    return 0;
+  const int depth = atoi(argv[1]);
 
   sb_frac p;
   sb_frac q;
+
   // #TODO verificar erros de inicialiação
   sb_frac_init(&p);
   sb_frac_init(&q);
