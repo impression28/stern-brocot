@@ -5,23 +5,23 @@ typedef struct
 {
 	mp_int num;
 	mp_int den;
-} mp_frac;
+} sb_frac;
 
-mp_err mp_frac_init(mp_frac *q)
+mp_err sb_frac_init(sb_frac *q)
 {
 	return mp_init_multi(&q->num, &q->den, NULL);
 }
 
-void mp_frac_clear(mp_frac *q)
+void sb_frac_clear(sb_frac *q)
 {
 	mp_clear_multi(&q->den, &q->num, NULL);
 }
 
 int main()
 {
-	mp_frac q;
-	mp_frac_init(&q);
-	mp_frac_clear(&q);
+	sb_frac q;
+	sb_frac_init(&q);
+	sb_frac_clear(&q);
 	/*
 	mp_int *a = malloc(sizeof(*a));
 	mp_int *b = malloc(sizeof(*b));
