@@ -77,18 +77,37 @@ mp_err sb_tree_populate_with_neighbors(sb_node *node, int depth,
   if (depth > 0) {
     // #TODO lidar com casos de erro
     node->l = malloc(sizeof(*node->l));
+    sb_frac_init(&node->l->frac);
     sb_tree_populate_with_neighbors(node->l, depth - 1, left_neighbor,
                                     &node->frac);
 
-    node->r = malloc(sizeof(node->r));
+    node->r = malloc(sizeof(*node->r));
+    sb_frac_init(&node->r->frac);
     sb_tree_populate_with_neighbors(node->r, depth - 1, &node->frac,
                                     right_neighbor);
   } else {
     node->l = node->r = NULL;
   }
+  return MP_OKAY;
 }
 
-int main() {
+mp_err sb_fwrite_tree(sb_node *node, int radix, FILE *stream) {
+  // #TODO lidar com casos de erro
+  if (node->l != NULL) {
+    sb_fwrite_tree(node->l, radix, stream);
+  }
+  sb_fwrite_frac(&node->frac, radix, stream);
+  fprintf(stream, "\n");
+  if (node->r != NULL) {
+    sb_fwrite_tree(node->r, radix, stream);
+  }
+  return MP_OKAY;
+}
+
+int main(int argc, char *argv[]) {
+  // if (argc != 2) return 0;
+  const int depth = 4; // atoi(argv[1]);
+
   sb_frac p;
   sb_frac q;
   // #TODO verificar erros de inicialiação
@@ -104,14 +123,13 @@ int main() {
   mp_set_i32(&q.num, one);
   mp_set_i32(&q.den, zero);
 
-  sb_fwrite_frac(&p, 10, stdout);
-  printf("\n");
-  sb_fwrite_frac(&q, 10, stdout);
-  printf("\n");
+  sb_node root;
+  sb_frac_init(&root.frac);
+  sb_tree_populate_with_neighbors(&root, depth, &p, &q);
+  // sb_fwrite_tree(&root, 10, stdout);
 
-  sb_mediant(&p, &q, &p);
-  sb_fwrite_frac(&p, 10, stdout);
-  printf("\n");
+  sb_tree_clear(&root);
 
   sb_frac_clear(&q);
+  sb_frac_clear(&p);
 }
