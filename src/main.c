@@ -65,6 +65,29 @@ void sb_tree_clear(sb_node *node) {
   sb_frac_clear(&node->frac);
 }
 
+mp_err sb_tree_populate_with_neighbors(sb_node *node, int depth,
+                                       sb_frac *left_neighbor,
+                                       sb_frac *right_neighbor) {
+  mp_err ret = sb_mediant(left_neighbor, right_neighbor, &node->frac);
+  if (ret != MP_OKAY) {
+    node->l = node->r = NULL;
+    return ret;
+  }
+
+  if (depth > 0) {
+    // #TODO lidar com casos de erro
+    node->l = malloc(sizeof(*node->l));
+    sb_tree_populate_with_neighbors(node->l, depth - 1, left_neighbor,
+                                    &node->frac);
+
+    node->r = malloc(sizeof(node->r));
+    sb_tree_populate_with_neighbors(node->r, depth - 1, &node->frac,
+                                    right_neighbor);
+  } else {
+    node->l = node->r = NULL;
+  }
+}
+
 int main() {
   sb_frac p;
   sb_frac q;
