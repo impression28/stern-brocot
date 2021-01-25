@@ -7,11 +7,14 @@ typedef struct {
   mp_int den;
 } sb_frac;
 
-// uma fração diádica tem denominador igual a 2^den_exp
+// um intervalo limitado por frações diádicas com denominadores iguais a
+// 2^den_exp. acho melhor deixar o intervalo inteiro na mesma struct porque
+// assim não tenho que me preocupar em ficar sincronizando os denominadores
 typedef struct {
-  mp_int num;
+  mp_int lower; // numerador do limite inferior
+  mp_int upper; // numerador do limite superior
   int32_t den_exp;
-} sb_dfrac;
+} sb_dlimits;
 
 // um nó de árvore binária de stern-brocot
 struct sb_node {
@@ -62,6 +65,7 @@ void sb_tree_free(sb_node *node) {
   sb_frac_clear(&node->frac);
   free(node);
 }
+
 void sb_tree_clear(sb_node *node) {
   if (node->l != NULL) {
     sb_tree_free(node->l);
@@ -95,6 +99,14 @@ mp_err sb_tree_populate_with_neighbors(sb_node *node, int depth,
   } else {
     node->l = node->r = NULL;
   }
+  return MP_OKAY;
+}
+
+// gera a menor árvore que tem profundidade `depth` dentro de `limits`
+mp_err sb_tree_populate_inside_limits(sb_node *node, int depth,
+                                      sb_frac *left_neighbor,
+                                      sb_frac *righ_neighbor,
+                                      sb_dlimits *limits) {
   return MP_OKAY;
 }
 
