@@ -159,7 +159,7 @@ mp_err sb_tree_populate_inside_limits(sb_node *node, int32_t depth,
                                       sb_frac *left_neighbor,
                                       sb_frac *right_neighbor,
                                       sb_dlimits *limits) {
-  assert(mp_cmp(&limits->lower, &limits->upper) == MP_GT);
+  assert(mp_cmp(&limits->lower, &limits->upper) == MP_LT);
 
   if (depth > 0) {
     const int remaining_depth = depth - 1;
@@ -242,10 +242,46 @@ int main(int argc, char *argv[]) {
     return 0;
   const int32_t depth = atoi(argv[1]);
 
+  const int32_t zero = 0;
+  const int32_t one = 1;
+  const int32_t two = 2;
+
+  sb_frac zfrac;
+  sb_frac ifrac;
+
+  // #TODO verificar erros de inicialiação
+  sb_frac_init(&zfrac);
+  sb_frac_init(&ifrac);
+
+  mp_set_i32(&zfrac.num, zero);
+  mp_set_i32(&zfrac.den, one);
+
+  mp_set_i32(&ifrac.num, one);
+  mp_set_i32(&ifrac.den, zero);
+
   sb_node root;
+
   sb_frac_init(&root.frac);
-  sb_tree_populate(&root, depth);
+  sb_tree_populate(&root, 1);
   sb_fwrite_tree(&root, 10, stdout);
 
+  mp_int a;
+  mp_int b;
+
+  sb_dlimits limits;
+  limits.den_exp = 0;
+  mp_init_multi(&limits.upper, &limits.lower, &limits.comparer, NULL);
+
+  mp_set_i32(&limits.lower, one);
+  mp_set_i32(&limits.upper, two);
+
+  sb_tree_populate_inside_limits(&root, depth, &zfrac, &ifrac, &limits);
+  sb_fwrite_tree(&root, 10, stdout);
+
+  mp_clear_multi(&limits.upper, &limits.lower, &limits.comparer, NULL);
+
   sb_tree_clear(&root);
+
+  sb_frac_clear(&ifrac);
+  sb_frac_clear(&zfrac);
 }
