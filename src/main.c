@@ -49,7 +49,7 @@ mp_err sb_mediant(sb_frac *a, sb_frac *b, sb_frac *c) {
 }
 
 // dá print na fração `a` em base `radix` em `stream`
-mp_err sb_fwrite_frac(sb_frac *a, int radix, FILE *stream) {
+mp_err sb_fwrite_frac(sb_frac *a, int32_t radix, FILE *stream) {
   mp_err ret = mp_fwrite(&a->num, radix, stream);
   if (ret != MP_OKAY)
     return ret;
@@ -82,7 +82,7 @@ void sb_tree_clear(sb_node *node) {
   sb_frac_clear(&node->frac);
 }
 
-mp_err sb_tree_populate_with_neighbors(sb_node *node, int depth,
+mp_err sb_tree_populate_with_neighbors(sb_node *node, int32_t depth,
                                        sb_frac *left_neighbor,
                                        sb_frac *right_neighbor) {
   mp_err ret = sb_mediant(left_neighbor, right_neighbor, &node->frac);
@@ -109,14 +109,14 @@ mp_err sb_tree_populate_with_neighbors(sb_node *node, int depth,
 }
 
 // gera a menor árvore que tem profundidade `depth` dentro de `limits`
-mp_err sb_tree_populate_inside_limits(sb_node *node, int depth,
+mp_err sb_tree_populate_inside_limits(sb_node *node, int32_t depth,
                                       sb_frac *left_neighbor,
                                       sb_frac *righ_neighbor,
                                       sb_dlimits *limits) {
   return MP_OKAY;
 }
 
-mp_err sb_fwrite_tree(sb_node *node, int radix, FILE *stream) {
+mp_err sb_fwrite_tree(sb_node *node, int32_t radix, FILE *stream) {
   // #TODO lidar com casos de erro
   if (node->l != NULL) {
     sb_fwrite_tree(node->l, radix, stream);
@@ -129,7 +129,7 @@ mp_err sb_fwrite_tree(sb_node *node, int radix, FILE *stream) {
   return MP_OKAY;
 }
 
-mp_err sb_tree_populate(sb_node *node, int depth) {
+mp_err sb_tree_populate(sb_node *node, int32_t depth) {
   sb_frac p;
   sb_frac q;
 
@@ -156,7 +156,7 @@ mp_err sb_tree_populate(sb_node *node, int depth) {
 int main(int argc, char *argv[]) {
   if (argc != 2)
     return 0;
-  const int depth = atoi(argv[1]);
+  const int32_t depth = atoi(argv[1]);
 
   sb_node root;
   sb_frac_init(&root.frac);
