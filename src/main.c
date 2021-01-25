@@ -1,4 +1,6 @@
+#include <assert.h>
 #include <stdlib.h>
+
 #include <tommath.h>
 
 // uma fração é um par de inteiros
@@ -64,24 +66,30 @@ mp_err sb_fwrite_frac(sb_frac *a, int32_t radix, FILE *stream) {
 void sb_tree_free(sb_node *node) {
   if (node->l != NULL) {
     sb_tree_free(node->l);
+    node->l = NULL;
   }
   if (node->r != NULL) {
     sb_tree_free(node->r);
+    node->r = NULL;
   }
   sb_frac_clear(&node->frac);
   free(node);
+  node = NULL;
 }
 
 void sb_tree_clear(sb_node *node) {
   if (node->l != NULL) {
     sb_tree_free(node->l);
+    node->l = NULL;
   }
   if (node->r != NULL) {
     sb_tree_free(node->r);
+    node->r = NULL;
   }
   sb_frac_clear(&node->frac);
 }
 
+// IMPORTANTE: isso pode vazar memória se você chamar numa árvore já existente
 mp_err sb_tree_populate_with_neighbors(sb_node *node, int32_t depth,
                                        sb_frac *left_neighbor,
                                        sb_frac *right_neighbor) {
@@ -134,27 +142,60 @@ int sb_ucompare(sb_frac *frac, sb_dlimits *interval) {
   return mp_cmp(&frac->num, &interval->comparer);
 }
 
+sb_node *new_node(sb_frac *left_neighbor, sb_frac *right_neighbor) {
+  sb_node *ret = malloc(sizeof(*ret));
+  sb_frac_init(&ret->frac);
+  sb_mediant(left_neighbor, right_neighbor, &ret->frac);
+  // #TODO será que não existe uma forma de evitar ficar escrevendo esse NULL
+  // quando ele vai ser substituido logo depois? provavelmente não faz diferença
+  // pra performance, mas faz diferença pra mim
+  ret->l = NULL;
+  ret->r = NULL;
+  return ret;
+}
+
 // gera a menor árvore que tem profundidade `depth` dentro de `limits`
 mp_err sb_tree_populate_inside_limits(sb_node *node, int32_t depth,
                                       sb_frac *left_neighbor,
-                                      sb_frac *righ_neighbor,
+                                      sb_frac *right_neighbor,
                                       sb_dlimits *limits) {
+  assert(mp_cmp(&limits->lower, &limits->upper) == MP_GT);
+
   if (depth > 0) {
-    const int cmp_res = sb_lcompare(&node->frac, limits);
-    switch (cmp_res) {
-    case MP_GT:
-      // #TODO
-      break;
-    case MP_LT:
-      // #TODO
-      break;
-    case MP_EQ:
-      return MP_OKAY;
+    const int remaining_depth = depth - 1;
+
+    // se estamos a esquerda do limite inferior, não temos motivo para ir mais a
+    // esquerda
+    const int lcmp_res = sb_lcompare(&node->frac, limits);
+    if (lcmp_res != MP_LT) {
+      if (node->l == NULL) {
+        node->l = new_node(left_neighbor, &node->frac);
+      }
+      sb_tree_populate_inside_limits(node->l, remaining_depth, left_neighbor,
+                                     &node->frac, limits);
+    } else if (node->l != NULL) {
+      sb_tree_free(node->l);
     }
+    // da mesma forma, se estamos a direita do limite superior, não temos motivo
+    // para ir mais para a direita
+    const int ucmp_res = sb_ucompare(&node->frac, limits);
+    if (ucmp_res != MP_GT) {
+      if (node->r == NULL) {
+        node->r = new_node(&node->frac, right_neighbor);
+      }
+      sb_tree_populate_inside_limits(node->r, remaining_depth, &node->frac,
+                                     right_neighbor, limits);
+    } else if (node->r != NULL) {
+      sb_tree_free(node->r);
+    }
+    // em todo intervalo válido pelo menos um dos `if`s acima é executado
   } else {
-    node->l = NULL;
-    node->r = NULL;
-    return MP_OKAY;
+    if (node->l != NULL) {
+      sb_tree_free(node->l);
+    }
+    if (node->r != NULL) {
+      sb_tree_free(node->r);
+    }
   }
   return MP_OKAY;
 }
