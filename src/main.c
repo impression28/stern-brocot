@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
   sb_node root;
   sb_frac_init(&root.frac);
   sb_tree_populate_with_neighbors(&root, depth, &p, &q);
-  // sb_fwrite_tree(&root, 10, stdout);
+  sb_fwrite_tree(&root, 10, stdout);
 
   sb_tree_clear(&root);
 

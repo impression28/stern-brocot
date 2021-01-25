@@ -6,7 +6,7 @@ pure C implementation of a stern brocot tree
 - [x] calcular mediante de duas frações
 - [x] dar print em uma fração
 - [x] definir estrutura de dados para árvore de stern-brocot
-- [ ] dar print na árvore com uma depth-first search
+- [x] dar print na árvore com uma depth-first search
 - [x] gerar uma árvore de stern-brocot com profundidade n
 - [ ] gerar uma árvore de stern-brocot com profundidade n apenas dentro de um intervalo limitado por duas frações diádicas, fora disso gerar o mínimo possível
 - [ ] gerar a menor árvore de stern-brocot possível que particione um intervalo com resolução epsilon
