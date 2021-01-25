@@ -19,7 +19,6 @@ struct sb_node {
   struct sb_node *l;
   struct sb_node *r;
 };
-
 typedef struct sb_node sb_node;
 
 mp_err sb_frac_init(sb_frac *q) {
@@ -30,7 +29,7 @@ void sb_frac_clear(sb_frac *q) { mp_clear_multi(&q->den, &q->num, NULL); }
 
 // calcula a [mediante] de duas frações. é perfeitamente legal termos
 // a == b ou b == c ou a == c
-// [mediante](https://en.wikipedia.org/wiki/Mediant_(mathematics))
+// [mediante]: https://en.wikipedia.org/wiki/Mediant_(mathematics)
 mp_err sb_mediant(sb_frac *a, sb_frac *b, sb_frac *c) {
   mp_err ret;
   ret = mp_add(&a->num, &b->num, &c->num);
@@ -50,7 +49,7 @@ mp_err sb_fwrite_frac(sb_frac *a, int radix, FILE *stream) {
   return ret;
 }
 
-// #TODO fazer uma implementação não-recursiva disto tenho medo de
+// #TODO fazer uma implementação não-recursiva disto. tenho medo de
 // stack-overflows, apesar de que acho muito difícil termos uma árvore tão
 // profunda que vá dar stack overflow
 void sb_tree_free(sb_node *node) {
@@ -112,11 +111,7 @@ mp_err sb_fwrite_tree(sb_node *node, int radix, FILE *stream) {
   return MP_OKAY;
 }
 
-int main(int argc, char *argv[]) {
-  if (argc != 2)
-    return 0;
-  const int depth = atoi(argv[1]);
-
+mp_err sb_tree_populate(sb_node *node, int depth) {
   sb_frac p;
   sb_frac q;
 
@@ -133,13 +128,22 @@ int main(int argc, char *argv[]) {
   mp_set_i32(&q.num, one);
   mp_set_i32(&q.den, zero);
 
-  sb_node root;
-  sb_frac_init(&root.frac);
-  sb_tree_populate_with_neighbors(&root, depth, &p, &q);
-  sb_fwrite_tree(&root, 10, stdout);
-
-  sb_tree_clear(&root);
+  const mp_err ret = sb_tree_populate_with_neighbors(node, depth, &p, &q);
 
   sb_frac_clear(&q);
   sb_frac_clear(&p);
+  return ret;
+}
+
+int main(int argc, char *argv[]) {
+  if (argc != 2)
+    return 0;
+  const int depth = atoi(argv[1]);
+
+  sb_node root;
+  sb_frac_init(&root.frac);
+  sb_tree_populate(&root, depth);
+  sb_fwrite_tree(&root, 10, stdout);
+
+  sb_tree_clear(&root);
 }
