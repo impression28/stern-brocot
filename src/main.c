@@ -108,11 +108,54 @@ mp_err sb_tree_populate_with_neighbors(sb_node *node, int32_t depth,
   return MP_OKAY;
 }
 
+// compara a fração frac com o limite inferior do intervalo `interval`
+// retorna:
+// * MP_GT se frac >  interval->lower
+// * MP_EQ se frac == interval->lower
+// * MP_LT se frac <  interval->lower
+int sb_lcompare(sb_frac *frac, sb_dlimits *interval) {
+  // aqui a vantagem de usar frações diádicas fica aparente, sempre temos
+  // \frac{a}{b} < \frac{c}{d} \Leftrightarrow \frac{a \cdot d}{b} < c
+  // é o único passo até agora que exige multiplicação, infelizmente, mas pelo
+  // menos se temos b = 2^den_exp podemos substituir a divisão por um shift
+  // pra direita, o que é muuuuito mais rápido do que dividir.
+
+  // #TODO casos de erro you know the drill
+  mp_mul(&interval->lower, &frac->den, &interval->comparer);
+  mp_rshd(&interval->comparer, interval->den_exp);
+  return mp_cmp(&frac->num, &interval->comparer);
+}
+// completamente análoga à função anterior, mas com interval->upper em vez de
+// lower
+int sb_ucompare(sb_frac *frac, sb_dlimits *interval) {
+  // #TODO casos de erro you know the drill
+  mp_mul(&interval->upper, &frac->den, &interval->comparer);
+  mp_rshd(&interval->comparer, interval->den_exp);
+  return mp_cmp(&frac->num, &interval->comparer);
+}
+
 // gera a menor árvore que tem profundidade `depth` dentro de `limits`
 mp_err sb_tree_populate_inside_limits(sb_node *node, int32_t depth,
                                       sb_frac *left_neighbor,
                                       sb_frac *righ_neighbor,
                                       sb_dlimits *limits) {
+  if (depth > 0) {
+    const int cmp_res = sb_lcompare(&node->frac, limits);
+    switch (cmp_res) {
+    case MP_GT:
+      // #TODO
+      break;
+    case MP_LT:
+      // #TODO
+      break;
+    case MP_EQ:
+      return MP_OKAY;
+    }
+  } else {
+    node->l = NULL;
+    node->r = NULL;
+    return MP_OKAY;
+  }
   return MP_OKAY;
 }
 
