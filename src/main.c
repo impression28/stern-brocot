@@ -7,15 +7,6 @@ typedef struct {
   mp_int den;
 } sb_frac;
 
-// um intervalo limitado por frações diádicas com denominadores iguais a
-// 2^den_exp. acho melhor deixar o intervalo inteiro na mesma struct porque
-// assim não tenho que me preocupar em ficar sincronizando os denominadores
-typedef struct {
-  mp_int lower; // numerador do limite inferior
-  mp_int upper; // numerador do limite superior
-  int32_t den_exp;
-} sb_dlimits;
-
 // um nó de árvore binária de stern-brocot
 struct sb_node {
   sb_frac frac;
@@ -23,6 +14,21 @@ struct sb_node {
   struct sb_node *r;
 };
 typedef struct sb_node sb_node;
+
+// um intervalo limitado por frações diádicas com denominadores iguais a
+// 2^den_exp. acho melhor deixar o intervalo inteiro na mesma struct porque
+// assim não tenho que me preocupar em ficar sincronizando os denominadores
+typedef struct {
+  mp_int lower; // numerador do limite inferior
+  mp_int upper; // numerador do limite superior
+
+  mp_int comparer; // número que vamos reaproveitar para armazenar o resultado
+                   // das multiplicações quando formos verificar se uma fração
+                   // está dentro do intervalo ou não
+
+  int32_t den_exp; // expoente do denominador, talvez eu mude para uint32_t se
+                   // não precisar fazer muita aritmética com ele
+} sb_dlimits;
 
 mp_err sb_frac_init(sb_frac *q) {
   return mp_init_multi(&q->num, &q->den, NULL);
